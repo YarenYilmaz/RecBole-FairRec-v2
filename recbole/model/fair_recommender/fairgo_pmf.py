@@ -110,11 +110,11 @@ class FairGo_PMF(FairRecommender):
         rating_M_T = self.rating_matrix.transpose()
         data_dict = dict(zip(zip(rating_M.row, rating_M.col + self.n_users), rating_M.data))
         data_dict.update(dict(zip(zip(rating_M_T.row + self.n_users, rating_M_T.col), rating_M_T.data)))
-        A._update(data_dict)
-        """
+        #A._update(data_dict)
+
         for (key, value) in data_dict.items():
             A[key] = value
-        """
+
         # norm rating matrix
         sumArr = A.sum(axis=1)
         # add epsilon to avoid divide by zero Warning
