@@ -17,9 +17,16 @@ from recbole.data import create_dataset, data_preparation, save_split_dataloader
 from recbole.utils import init_logger, get_model, get_trainer, init_seed, set_color
 
 
-def run_recbole(model=None, dataset=None, config_file_list=None, config_dict=None, saved=True):
-    r""" A fast running api, which includes the complete process of
-    training and testing a model on a specified dataset
+def prepare_data(config_file_list, dataset_name):
+    config = Config(model=None, dataset=dataset_name, config_file_list=config_file_list)
+    dataset = create_dataset(config)
+    train_data, valid_data, test_data = data_preparation(config, dataset)
+    return config, train_data, valid_data, test_data
+
+
+def run_recbole(model=None, dataset=None, config_file_list=None, config_dict=None, saved=True, train_data=None,
+                valid_data=None, test_data=None):
+    """ A fast running API, which includes the complete process of training and testing a model on a specified dataset.
 
     Args:
         model (str, optional): Model name. Defaults to ``None``.
@@ -27,37 +34,39 @@ def run_recbole(model=None, dataset=None, config_file_list=None, config_dict=Non
         config_file_list (list, optional): Config files used to modify experiment parameters. Defaults to ``None``.
         config_dict (dict, optional): Parameters dictionary used to modify experiment parameters. Defaults to ``None``.
         saved (bool, optional): Whether to save the model. Defaults to ``True``.
+        train_data (AbstractDataLoader, optional): Pre-prepared training data. Defaults to ``None``.
+        valid_data (AbstractDataLoader, optional): Pre-prepared validation data. Defaults to ``None``.
+        test_data (AbstractDataLoader, optional): Pre-prepared test data. Defaults to ``None``.
     """
-    # configurations initialization
+    # Configurations initialization
     config = Config(model=model, dataset=dataset, config_file_list=config_file_list, config_dict=config_dict)
     init_seed(config['seed'], config['reproducibility'])
-    # logger initialization
+
+    # Logger initialization
     init_logger(config)
     logger = getLogger()
-
     logger.info(config)
 
-    # dataset filtering
-    dataset = create_dataset(config)
-    logger.info(dataset)
+    # Only create the dataset if pre-prepared data is not provided
+    if train_data is None or valid_data is None or test_data is None:
+        dataset = create_dataset(config)
+        logger.info(dataset)
+        train_data, valid_data, test_data = data_preparation(config, dataset)
 
-    # dataset splitting
-    train_data, valid_data, test_data = data_preparation(config, dataset)
-
-    # model loading and initialization
+    # Model loading and initialization
     init_seed(config['seed'], config['reproducibility'])
-    model = get_model(config['model'])(config, train_data.dataset).to(config['device'])
-    logger.info(model)
+    model_instance = get_model(config['model'])(config, train_data.dataset).to(config['device'])
+    logger.info(model_instance)
 
-    # trainer loading and initialization
-    trainer = get_trainer(config['MODEL_TYPE'], config['model'])(config, model)
+    # Trainer loading and initialization
+    trainer = get_trainer(config['MODEL_TYPE'], config['model'])(config, model_instance)
 
-    # model training
+    # Model training
     best_valid_score, best_valid_result = trainer.fit(
         train_data, valid_data, saved=saved, show_progress=config['show_progress']
     )
 
-    # model evaluation
+    # Model evaluation
     test_result = trainer.evaluate(test_data, load_best_model=saved, show_progress=config['show_progress'])
 
     logger.info(set_color('best valid ', 'yellow') + f': {best_valid_result}')
