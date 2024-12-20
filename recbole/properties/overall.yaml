@@ -15,7 +15,7 @@ log_wandb: False
 wandb_project: 'recbole'
 
 # training settings
-epochs: 300
+epochs: 10 #300
 train_batch_size: 2048
 learner: adam
 learning_rate: 0.001
@@ -33,12 +33,12 @@ require_pow: False
 eval_args:
   split: {'RS':[0.8,0.1,0.1]}
   group_by: user
-  order: RO
+  order: TO
   mode: full
 repeatable: False
 metrics: ["Recall","MRR","NDCG","Hit","Precision"]
-topk: [10]
-valid_metric: MRR@10
+topk: [5]
+valid_metric: MRR@5
 valid_metric_bigger: True
 eval_batch_size: 4096
 metric_decimal_place: 4

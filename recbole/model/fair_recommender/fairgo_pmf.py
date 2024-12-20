@@ -18,6 +18,7 @@ from recbole.utils import InputType
 import numpy as np
 import scipy.sparse as sp
 
+
 class FairGo_PMF(FairRecommender):
     r""" FairGo is a fair-aware model for learning fair graph embeddings that be trained in the pointwise way.
 
@@ -63,7 +64,7 @@ class FairGo_PMF(FairRecommender):
             self.item_embedding_layer.weight.data.copy_(torch.from_numpy(item_emb))
         self.dis_layer_dict = self.init_dis_layers()
         self.filter_layer_dict = self.init_filter_layers()
-        self.aggr_layer = nn.Sequential(nn.Linear(self.n_layers*self.embedding_size, self.embedding_size),
+        self.aggr_layer = nn.Sequential(nn.Linear(self.n_layers * self.embedding_size, self.embedding_size),
                                         activation_layer(self.act),
                                         nn.Linear(self.embedding_size, self.embedding_size),
                                         activation_layer(self.act),
@@ -110,6 +111,10 @@ class FairGo_PMF(FairRecommender):
         data_dict = dict(zip(zip(rating_M.row, rating_M.col + self.n_users), rating_M.data))
         data_dict.update(dict(zip(zip(rating_M_T.row + self.n_users, rating_M_T.col), rating_M_T.data)))
         A._update(data_dict)
+        """
+        for (key, value) in data_dict.items():
+            A[key] = value
+        """
         # norm rating matrix
         sumArr = A.sum(axis=1)
         # add epsilon to avoid divide by zero Warning
@@ -143,17 +148,18 @@ class FairGo_PMF(FairRecommender):
             output_dim = self.sst_size[sst]
             if output_dim == 2:
                 output_dim = 1
-            dis_layer_dict[sst] = MLPLayers(layers=[self.embedding_size]+self.dis_hidden_size_list+[output_dim], 
-                                activation=self.act).to(self.device)
-        
+            dis_layer_dict[sst] = MLPLayers(layers=[self.embedding_size] + self.dis_hidden_size_list + [output_dim],
+                                            activation=self.act).to(self.device)
+
         return dis_layer_dict
 
     def init_filter_layers(self):
         filter_layer_dict = {}
         for sst in self.sst_attrs:
-            filter_layer_dict[sst] = MLPLayers(layers=[self.embedding_size]+self.filter_hidden_size_list+[self.embedding_size],
-                                    activation=self.act).to(self.device)
-        
+            filter_layer_dict[sst] = MLPLayers(
+                layers=[self.embedding_size] + self.filter_hidden_size_list + [self.embedding_size],
+                activation=self.act).to(self.device)
+
         return filter_layer_dict
 
     def forward(self, sst_list=None):
@@ -163,9 +169,10 @@ class FairGo_PMF(FairRecommender):
                 sst_list = self.sst_attrs
             temp = None
             for sst in sst_list:
-                temp = self.filter_layer_dict[sst](all_embedding) if temp is None else temp+self.filter_layer_dict[sst](all_embedding)
-            
-            all_embedding = temp/len(self.filter_layer_dict)
+                temp = self.filter_layer_dict[sst](all_embedding) if temp is None else temp + self.filter_layer_dict[
+                    sst](all_embedding)
+
+            all_embedding = temp / len(self.filter_layer_dict)
         user_all_embeddings, item_all_embeddings = torch.split(all_embedding, [self.n_users, self.n_items])
 
         return user_all_embeddings, item_all_embeddings
@@ -184,7 +191,7 @@ class FairGo_PMF(FairRecommender):
         if self.train_stage == 'finetune':
             fair_loss = self.fair_weight * self.calculate_dis_loss(interaction, sst_list)
             return mse_loss - fair_loss
-        
+
         return mse_loss
 
     def calculate_dis_loss(self, interaction, sst_list):
@@ -210,7 +217,7 @@ class FairGo_PMF(FairRecommender):
             all_graph_embeddings = self.aggr_layer(torch.cat(graph_embedding_list, dim=1))
         elif self.aggr_method == 'LVA':
             all_graph_embeddings = [all_embed[:self.n_users][user] for all_embed in graph_embedding_list]
-        
+
         if self.aggr_method != 'LVA' or self.n_layers == 1:
             user_all_graph_embeddings, _ = torch.split(all_graph_embeddings, [self.n_users, self.n_items])
             user_local_embedding = user_all_graph_embeddings[user]
@@ -219,19 +226,26 @@ class FairGo_PMF(FairRecommender):
         local_dis_loss = 0.
         for sst in sst_list:
             if self.sst_size[sst] == 2:
-                node_dis_loss += self.bin_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_node_embedding)),interaction[sst].float().unsqueeze(1))
+                node_dis_loss += self.bin_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_node_embedding)),
+                                                  interaction[sst].float().unsqueeze(1))
                 if self.aggr_method == 'LVA' and self.n_layers > 1:
                     for i, weight in enumerate(self.vs_weights):
-                        local_dis_loss += weight * self.bin_dis_fun(self.sigmoid(self.dis_layer_dict[sst](all_graph_embeddings[i])),interaction[sst].float().unsqueeze(1))
+                        local_dis_loss += weight * self.bin_dis_fun(
+                            self.sigmoid(self.dis_layer_dict[sst](all_graph_embeddings[i])),
+                            interaction[sst].float().unsqueeze(1))
                 else:
-                    local_dis_loss += self.bin_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_local_embedding)),interaction[sst].float().unsqueeze(1))
+                    local_dis_loss += self.bin_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_local_embedding)),
+                                                       interaction[sst].float().unsqueeze(1))
             else:
-                node_dis_loss += self.multi_dis_fun(self.dis_layer_dict[sst](user_node_embedding),interaction[sst].long())
+                node_dis_loss += self.multi_dis_fun(self.dis_layer_dict[sst](user_node_embedding),
+                                                    interaction[sst].long())
                 if self.aggr_method == 'LVA' and self.n_layers > 1:
                     for i, weight in enumerate(self.vs_weights):
-                        local_dis_loss += weight * self.multi_dis_fun(self.sigmoid(self.dis_layer_dict[sst](all_graph_embeddings[i])),interaction[sst].long())
+                        local_dis_loss += weight * self.multi_dis_fun(
+                            self.sigmoid(self.dis_layer_dict[sst](all_graph_embeddings[i])), interaction[sst].long())
                 else:
-                    local_dis_loss += self.multi_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_local_embedding)),interaction[sst].long())
+                    local_dis_loss += self.multi_dis_fun(self.sigmoid(self.dis_layer_dict[sst](user_local_embedding)),
+                                                         interaction[sst].long())
 
         return node_dis_loss + local_dis_loss
 
@@ -243,7 +257,7 @@ class FairGo_PMF(FairRecommender):
 
         u_embeddings = user_all_embeddings[user]
         i_embeddings = item_all_embeddings[item]
-        
+
         scores = torch.mul(u_embeddings, i_embeddings).sum(dim=1)
         return torch.clamp(scores, min=0., max=self.max_rating) / self.max_rating
 
@@ -258,10 +272,10 @@ class FairGo_PMF(FairRecommender):
 
     def get_sst_embed(self, user_data, sst_list=None):
         ret_dict = {}
-        user_indices = torch.arange(1,self.n_users)
+        user_indices = torch.arange(1, self.n_users)
         sst_list = self.sst_attrs if sst_list is None else sst_list
         for sst in sst_list:
-            ret_dict[sst] = user_data[sst][user_indices-1]
+            ret_dict[sst] = user_data[sst][user_indices - 1]
         user_embeddings, _ = self.forward()
         ret_dict['embedding'] = user_embeddings[user_indices]
 

@@ -19,7 +19,7 @@ load_col:
 
 # model config
 model: FairGo_PMF
-aggr_method: 'LBA'
+aggr_method: 'WAP'
 vs_weights: [4,1]
 embedding_size: 64
 dis_hidden_size_list: [16,8,4]
@@ -28,7 +28,7 @@ activation: leakyrelu
 fair_weight: 0.1
 
 # training settings
-pretrain_epochs: 600
+pretrain_epochs: 10 #600
 train_epoch_interval: 5
 weight_decay: 0.0001
 
@@ -36,7 +36,7 @@ weight_decay: 0.0001
 eval_args:
   split: {'RS':[8,1,1]}
   group_by: user
-  order: RO
+  order: TO
   mode: uni100
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
         "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness"]
