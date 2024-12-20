@@ -4,8 +4,8 @@ use_gpu: True
 seed: 2020
 state: INFO
 reproducibility: True
-data_path: 'dataset_v2/'
-data_path_inter: 'dataset_v2/'
+data_path: 'dataset/'
+data_path_inter: 'dataset/'
 checkpoint_dir: 'saved'
 show_progress: True
 save_dataset: False
