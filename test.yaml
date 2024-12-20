@@ -25,7 +25,7 @@ gcn_dropout: 0.2
 gcn_act: relu
 
 # training settings
-pretrain_epochs: 300
+pretrain_epochs: 600
 train_epoch_interval: 5
 weight_decay: 0.0001
 
@@ -36,7 +36,8 @@ eval_args:
   order: TO
   mode: uni100
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
-        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness"]
+        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
+          "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]
 valid_metric: NDCG@5
 topk: [5]
 popularity_ratio: 0.1

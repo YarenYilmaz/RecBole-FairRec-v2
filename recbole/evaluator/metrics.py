@@ -1340,3 +1340,188 @@ class DifferentialFairness(AbstractMetric):
                 epsilon_values = np.where(epsilon > epsilon_values, epsilon, epsilon_values)
 
         return epsilon_values.mean()
+
+
+class KSStatic(AbstractMetric):
+    r"""KSStatistic measures the Kolmogorov-Smirnov statistic for fairness evaluation.
+
+    For further details, please refer to the statistical definition of KS statistic.
+
+    .. math::
+        D = \sup_x |F_1(x) - F_2(x)|
+
+    where :math:`F_1` and :math:`F_2` are the empirical cumulative distribution functions of the two groups.
+
+    """
+
+    smaller = True
+    metric_type = EvaluatorType.RANKING
+    metric_need = ['data.positive_i', 'rec.positive_score', 'data.sst']
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.sst_key = config['sst_attr_list'][0]
+        self.mode = config['eval_args']['mode']
+
+    def used_info(self, dataobject):
+        pos_score = dataobject.get('rec.positive_score').numpy()
+        pos_iids = dataobject.get('data.positive_i').numpy()
+        sst_value = dataobject.get('data.' + self.sst_key).numpy()
+        return pos_score, pos_iids, sst_value
+
+    def calculate_metric(self, dataobject):
+        pos_score, pos_iids, sst_value = self.used_info(dataobject)
+        metric_dict = {}
+        key = 'KS Statistic of sensitive attribute {}'.format(self.sst_key)
+        metric_dict[key] = round(self.get_ks_statistic(pos_score, pos_iids, sst_value), self.decimal_place)
+        return metric_dict
+
+    def get_ks_statistic(self, pos_score, pos_iids, sst_value):
+        r"""
+
+        Args:
+            pos_score(numpy.array): score prediction for user-item pairs
+            pos_iids(numpy.array): item_id array of interaction ITEM_FIELD
+            sst_value(numpy.array): sensitive attribute's value of corresponding users
+        Return:
+            KS Statistic
+        """
+        sst_unique_values, sst_indices = np.unique(sst_value, return_inverse=True)
+        if len(sst_unique_values) != 2:
+            raise ValueError(f'sensitive attribute must be binary')
+
+        # Split scores by sensitive attribute
+        scores_group_1 = pos_score[sst_indices == 0]
+        scores_group_2 = pos_score[sst_indices == 1]
+
+        # Compute empirical cumulative distribution functions
+        ecdf_group_1 = np.searchsorted(np.sort(scores_group_1), np.sort(pos_score), side='right') / len(scores_group_1)
+        ecdf_group_2 = np.searchsorted(np.sort(scores_group_2), np.sort(pos_score), side='right') / len(scores_group_2)
+
+        # Calculate KS statistic
+        ks_statistic = np.max(np.abs(ecdf_group_1 - ecdf_group_2))
+
+        return ks_statistic
+
+
+class AbsoluteDifference(AbstractMetric):
+    smaller = True
+    metric_type = EvaluatorType.RANKING
+    metric_need = ["rec.positive_score", "data.sst"]
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.sst_attr_list = config["sst_attr_list"]
+
+    def used_info(self, dataobject):
+        score = dataobject.get("rec.positive_score").numpy()
+        sst_dict = {}
+        for sst in self.sst_attr_list:
+            sst_dict[sst] = dataobject.get("data." + sst).numpy()
+
+        return score, sst_dict
+
+    def calculate_metric(self, dataobject):
+        score, sst_dict = self.used_info(dataobject)
+        metric_dict = {}
+        for sst, value in sst_dict.items():
+            key = "Absolute Difference {}".format(sst)
+            metric_dict[key] = round(self.get_absolute_difference(score, sst, value), self.decimal_place)
+
+        return metric_dict
+
+    def get_absolute_difference(self, score, sst, sst_value):
+        r"""
+            Absolute difference metric.
+
+            AD calculates the absolute difference of the average recommendation performance between protected group and the unprotected group.
+            Lower AD value suggests more balanced recommendations across groups.
+
+            Args:
+                score (numpy.array): User-item pred scores
+                sst_values (numpy.array): Users sensitive attributes
+
+            Returns:
+                float : AD between sensitive groups
+
+            Math : AD = |f(G0) − f(G1)|
+        """
+
+        unique_values = np.unique(sst_value)
+        if len(unique_values) < 2:
+            raise ValueError(
+                f"Sensitive attribute {sst} has only one unique value, which is insufficient for fairness calculation.")
+
+        sst_avg_score = []
+        for attr in unique_values:
+            sst_avg_score.append(np.mean(score[sst_value == attr]))
+
+        if len(unique_values) == 2:
+            return np.abs(sst_avg_score[0] - sst_avg_score[1])
+        else:
+            return np.std(sst_avg_score)
+
+
+class GeneralizedCrossEntropy(AbstractMetric):
+    metric_type = EvaluatorType.RANKING
+    metric_need = ["rec.positive_score", "data.sst"]
+
+    def __init__(self, config):
+        super().__init__(config)
+        # Default value of alpha is 0.5
+        self.alpha = config["alpha"]
+
+        self.sst_attr_list = config["sst_attr_list"]
+
+    def used_info(self, dataobject):
+        score = dataobject.get("rec.positive_score").numpy()
+        sst_dict = {}
+        for sst in self.sst_attr_list:
+            sst_dict[sst] = dataobject.get("data." + sst).numpy()
+
+        return score, sst_dict
+
+    def calculate_metric(self, dataobject):
+        score, sst_dict = self.used_info(dataobject)
+        metric_dict = {}
+        for sst, sst_values in sst_dict.items():
+            key = "Generalized Cross Entropy {}".format(sst)
+            metric_dict[key] = round(self.get_generalized_cross_entropy(score, sst, sst_values), self.decimal_place)
+        return metric_dict
+
+    def get_generalized_cross_entropy(self, score, sst, sst_values):
+
+        r"""
+        Generalized Cross-Entropy (GCE) Metric
+
+        Args:
+            score (numpy.array): Predicted recommendation scores.
+            sst_values (numpy.array): Sensitive attribute values.
+            alpha (float): A hyperparameter controlling the sensitivity of the metric.
+
+        Returns:
+            float: GCE score representing fairness, with higher values indicating closer alignment with fair
+                   distribution.
+
+        Formula:
+            GCE = (1 / (α * (1 - α))) * Σ (p_f(v) * (p(v)^(1 - α) - 1))
+    """
+
+        unique_values = np.unique(sst_values)
+
+        if len(unique_values) < 2:
+            raise ValueError(f"There is only one value for {sst} sensitive attribute")
+
+        gce_sum = 0
+
+        p_f_v = 1 / len(unique_values)
+        # Loop over unique values of sensitive attribute
+        for attr in unique_values:
+            # p_v and p_f_v respectively denote the probability distribution of the system performance and the fair probability distribution
+            p_v = np.sum(score[sst_values == attr]) / np.sum(score)
+            # Calculate gce sum for the sensitive attribute
+            gce_sum += (p_f_v ** self.alpha) * (p_v ** (1 - self.alpha))
+
+        gce = (1 / (self.alpha * (1 - self.alpha))) * (gce_sum - 1)
+
+        return gce

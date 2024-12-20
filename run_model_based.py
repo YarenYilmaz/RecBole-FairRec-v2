@@ -7,7 +7,7 @@ from recbole.quick_start import run_recbole
 from recbole.data import data_preparation, create_dataset
 
 if __name__ == '__main__':
-    subset_list = [f"sample_8"]
+    subset_list = [f"sample_{i}" for i in range(1, 200)]
     subset_folder_name = "URM_subsets_filtered"
     model_name = "FairGo_PMF"
     start_time = time.time()
@@ -28,14 +28,15 @@ if __name__ == '__main__':
         sample_config["data_path_inter"] = f'dataset_v2/ml-1M/{subset_folder_name}/{subset_name}.inter'
         dataset = create_dataset(sample_config)
         train_data, valid_data, test_data = data_preparation(sample_config, dataset)
-
+        
         # Run the model using the pre-split data
         result = run_recbole(
             model=model_name, dataset=args.dataset, config_file_list=config_file_list,
             train_data=train_data, valid_data=valid_data, test_data=test_data
         )
 
-        with open('results/output_subset_8.pkl', 'wb') as file:
-            pickle.dump(result, file)
+        path = f"results/results_ml1m_URM_filtered_gender/result_{subset_name}_{model_name}.txt"
+        with open(path, 'wb') as handle:
+            pickle.dump(result, handle)
 
     print("Total Time: ", time.time() - start_time)
