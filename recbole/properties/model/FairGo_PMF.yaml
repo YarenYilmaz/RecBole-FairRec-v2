@@ -28,7 +28,7 @@ activation: leakyrelu
 fair_weight: 0.1
 
 # training settings
-pretrain_epochs: 10 #600
+pretrain_epochs: 600
 train_epoch_interval: 5
 weight_decay: 0.0001
 

@@ -15,7 +15,7 @@ log_wandb: False
 wandb_project: 'recbole'
 
 # training settings
-epochs: 10 #300
+epochs: 300
 train_batch_size: 2048
 learner: adam
 learning_rate: 0.001
