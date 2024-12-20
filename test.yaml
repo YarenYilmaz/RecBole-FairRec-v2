@@ -25,7 +25,7 @@ gcn_dropout: 0.2
 gcn_act: relu
 
 # training settings
-pretrain_epochs: 600
+pretrain_epochs: 300
 train_epoch_interval: 5
 weight_decay: 0.0001
 
