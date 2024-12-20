@@ -28,7 +28,7 @@ if __name__ == '__main__':
         sample_config["data_path_inter"] = f'dataset_v2/ml-1M/{subset_folder_name}/{subset_name}.inter'
         dataset = create_dataset(sample_config)
         train_data, valid_data, test_data = data_preparation(sample_config, dataset)
-        
+
         # Run the model using the pre-split data
         result = run_recbole(
             model=model_name, dataset=args.dataset, config_file_list=config_file_list,
