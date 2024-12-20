@@ -36,10 +36,10 @@ eval_args:
   group_by: user
   order: TO
   mode: uni100
-metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
+metrics: ["AUC","NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
         "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
           "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]
-valid_metric: NDCG@5
-topk: [5]
+valid_metric: NDCG@10
+topk: [10]
 popularity_ratio: 0.1
 eval_batch_size: 8192

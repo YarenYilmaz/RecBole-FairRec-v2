@@ -39,8 +39,8 @@ eval_args:
   mode: full
 repeatable: False
 metrics: ["Recall","MRR","NDCG","Hit","Precision"]
-topk: [5]
-valid_metric: MRR@5
+topk: [10]
+valid_metric: MRR@10
 valid_metric_bigger: True
 eval_batch_size: 4096
 metric_decimal_place: 4
