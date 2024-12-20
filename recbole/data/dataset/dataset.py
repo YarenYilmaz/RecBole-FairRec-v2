@@ -103,7 +103,7 @@ class Dataset:
 
         self._get_preset()
         self._get_field_from_config()
-        self._load_data(self.dataset_name, self.dataset_path)
+        self._load_data(self.dataset_name, self.dataset_path_inter,self.dataset_path)
         self._init_alias()
         self._data_processing()
 
@@ -111,6 +111,7 @@ class Dataset:
         """Initialization useful inside attributes.
         """
         self.dataset_path = self.config['data_path']
+        self.dataset_path_inter = self.config['data_path_inter']
 
         self.field2type = {}
         self.field2source = {}
@@ -232,7 +233,7 @@ class Dataset:
             self.logger.info('Stop download.')
             exit(-1)
 
-    def _load_data(self, token, dataset_path):
+    def _load_data(self, token, dataset_path_inter, dataset_path):
         """Load features.
 
         Firstly load interaction features, then user/item features optionally,
@@ -244,7 +245,7 @@ class Dataset:
         """
         if not os.path.exists(dataset_path):
             self._download()
-        self._load_inter_feat(token, dataset_path)
+        self._load_inter_feat(token, dataset_path_inter)
         self.user_feat = self._load_user_or_item_feat(token, dataset_path, FeatureSource.USER, 'uid_field')
         self.item_feat = self._load_user_or_item_feat(token, dataset_path, FeatureSource.ITEM, 'iid_field')
         self._load_additional_feat(token, dataset_path)
@@ -263,7 +264,7 @@ class Dataset:
             dataset_path (str): path of dataset dir.
         """
         if self.benchmark_filename_list is None:
-            inter_feat_path = os.path.join(dataset_path, f'{token}.inter')
+            inter_feat_path = os.path.join(dataset_path)
             if not os.path.isfile(inter_feat_path):
                 raise ValueError(f'File {inter_feat_path} not exist.')
 
@@ -571,7 +572,7 @@ class Dataset:
                 elif ftype == FeatureType.FLOAT:
                     feat[field].fillna(value=feat[field].mean(), inplace=True)
                 else:
-                    dtype = np.int64 if ftype == FeatureType.TOKEN_SEQ else np.float32
+                    dtype = np.int64 if ftype == FeatureType.TOKEN_SEQ else np.float
                     feat[field] = feat[field].apply(lambda x: np.array([], dtype=dtype) if isinstance(x, float) else x)
 
     def _normalize(self):

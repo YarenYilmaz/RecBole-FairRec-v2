@@ -144,10 +144,10 @@ def data_preparation(config, dataset):
         train_sampler, valid_sampler, test_sampler = create_samplers(config, dataset, built_datasets)
 
         if model_type != ModelType.KNOWLEDGE:
-            train_data = get_dataloader(config, 'train')(config, train_dataset, train_sampler, shuffle=True)
+            train_data = get_dataloader(config, 'train')(config, train_dataset, train_sampler, shuffle=False)
         else:
             kg_sampler = KGSampler(dataset, config['train_neg_sample_args']['distribution'])
-            train_data = get_dataloader(config, 'train')(config, train_dataset, train_sampler, kg_sampler, shuffle=True)
+            train_data = get_dataloader(config, 'train')(config, train_dataset, train_sampler, kg_sampler, shuffle=False)
 
         valid_data = get_dataloader(config, 'evaluation')(config, valid_dataset, valid_sampler, shuffle=False)
         test_data = get_dataloader(config, 'evaluation')(config, test_dataset, test_sampler, shuffle=False)
