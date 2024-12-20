@@ -16,6 +16,7 @@ load_col:
 # additional_feat_suffix: [user_emb,item_emb]
 # alias_of_user_id: [uid]
 # alias_of_item_id: [iid]
+alpha : 0.5
 
 # model config
 model: FairGo_PMF
