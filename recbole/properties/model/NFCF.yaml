@@ -1,5 +1,5 @@
 # Environment settings
-load_pretrain_path: 'saved/saved_NFCF/NFCF-Apr-20-2022_09-42-48.pth'
+#load_pretrain_path: 'saved/saved_NFCF/NFCF-Apr-20-2022_09-42-48.pth'
 
 # Data settings
 LABEL_FIELD: label
@@ -17,16 +17,16 @@ embedding_size: 64
 mlp_hidden_size: [128,64]
 
 # training settings
-weight_decay: 1e-6
+weight_decay: 0.000001
 
 # evalution settings
 eval_args:
   split: {'RS':[8,1,1]}
   group_by: user
-  order: RO
-  mode: uni100
+  order: TO
+  mode: full
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
         "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness"]
-valid_metric: NDCG@5
-topk: [5]
+valid_metric: NDCG@10
+topk: [10]
 popularity_ratio: 0.1

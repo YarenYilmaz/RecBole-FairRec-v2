@@ -7,9 +7,9 @@ from recbole.quick_start import run_recbole
 from recbole.data import data_preparation, create_dataset
 
 if __name__ == '__main__':
-    subset_list = [f"sample_{i}" for i in range(1, 200)]
+    subset_list = [f"sample_{i}" for i in range(1, 101)]
     subset_folder_name = "URM_subsets_filtered"
-    model_name = "FairGo_PMF"
+    model_name = "FairGo_PMF" #"FairGo_PMF", "NFCF", "FOCF", "PFCN_MLP",
     start_time = time.time()
 
     for subset_name in subset_list:
@@ -35,7 +35,7 @@ if __name__ == '__main__':
             train_data=train_data, valid_data=valid_data, test_data=test_data
         )
 
-        path = f"results/results_ml1m_URM_filtered_age/result_{subset_name}_{model_name}.txt"
+        path = f"results/results_ml1m_URM_filtered_test/result_{subset_name}_{model_name}.txt"
         with open(path, 'wb') as handle:
             pickle.dump(result, handle)
 

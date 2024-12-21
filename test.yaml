@@ -1,12 +1,12 @@
-save_sst_embed: True
+save_sst_embed: False
 # pretrain_model_file_path: 'saved/saved_FairGo_GCN/FairGo_GCN-ml-1M-pretrain.pth'
 LABEL_FIELD: label
 threshold: {'rating': 3.0}
 TIME_FIELD: timestamp
-sst_attr_list: ['age']
+sst_attr_list: ['gender']
 load_col:
   inter: [user_id,item_id,rating,timestamp]
-  user: [user_id,age]
+  user: [user_id,gender]
 alpha : 0.5
 
 model: FairGo_PMF
@@ -35,7 +35,7 @@ eval_args:
   split: {'RS':[8,1,1]}
   group_by: user
   order: TO
-  mode: uni100
+  mode: full
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
         "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
           "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]

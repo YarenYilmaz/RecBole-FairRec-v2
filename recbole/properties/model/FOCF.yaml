@@ -8,7 +8,6 @@ load_col:
   user: [user_id,gender]
   item: [item_id]
 
-
 # model config
 model: FOCF
 embedding_size: 64
