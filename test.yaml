@@ -3,10 +3,10 @@ save_sst_embed: True
 LABEL_FIELD: label
 threshold: {'rating': 3.0}
 TIME_FIELD: timestamp
-sst_attr_list: ['gender']
+sst_attr_list: ['age']
 load_col:
   inter: [user_id,item_id,rating,timestamp]
-  user: [user_id,gender]
+  user: [user_id,age]
 alpha : 0.5
 
 model: FairGo_PMF

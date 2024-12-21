@@ -35,7 +35,7 @@ if __name__ == '__main__':
             train_data=train_data, valid_data=valid_data, test_data=test_data
         )
 
-        path = f"results/results_ml1m_URM_filtered_gender/result_{subset_name}_{model_name}.txt"
+        path = f"results/results_ml1m_URM_filtered_age/result_{subset_name}_{model_name}.txt"
         with open(path, 'wb') as handle:
             pickle.dump(result, handle)
 

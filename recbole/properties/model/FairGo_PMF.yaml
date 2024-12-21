@@ -5,11 +5,11 @@ save_sst_embed: True
 # Data settings
 LABEL_FIELD: label
 threshold: {'rating': 3.0}
-sst_attr_list: ['gender']
+sst_attr_list: ['age']
 load_pretrain_weight: False
 load_col:
   inter: [user_id,item_id,rating,timestamp]
-  user: [user_id,gender]
+  user: [user_id,age]
 #   user_emb: [uid,user_emb]
 #   item_emb: [iid,item_emb]
 # preload_weight: {'uid': user_emb, 'iid':item_emb}

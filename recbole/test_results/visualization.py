@@ -133,17 +133,17 @@ def plot_table_v2(data_dicts, model_name="Summary of All Calculations"):
     sort_cols = ["Model Name", "Dataset", "Is Filtered", "Subset ID", "Sensitive Feature"]
     
     # Identify and temporarily remove 'hit@5' if it exists in the DataFrame
-    if 'hit@5' in df.columns:
-       hit5 = df.pop('hit@5')
+    if 'hit@10' in df.columns:
+       hit10 = df.pop('hit@10')
     
     # Get the rest of the columns but not the ones already in first_cols and excluding 'hit@5'
     other_cols = [col for col in df.columns if col not in first_cols]
     # Combine them to get the new column order, appending 'hit@5' last if it was present
-    new_order = first_cols + other_cols + (['hit@5'] if 'hit@5' in locals() else [])
+    new_order = first_cols + other_cols + (['hit@10'] if 'hit@10' in locals() else [])
     df = df[new_order]
     
     # If 'hit@5' was removed, add it back at the end
-    df['hit@5'] = hit5
+    df['hit@10'] = hit10
 
     # Sort the DataFrame by the columns specified in sort_cols
     df.sort_values(by=sort_cols, inplace=True)
