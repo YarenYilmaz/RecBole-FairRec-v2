@@ -35,7 +35,7 @@ eval_args:
   split: {'RS':[8,1,1]}
   group_by: user
   order: TO
-  mode: full
+  mode: uni100
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
         "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
           "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]

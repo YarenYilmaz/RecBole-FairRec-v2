@@ -157,7 +157,7 @@ def plot_table_v2(data_dicts, model_name="Summary of All Calculations"):
     for col in df.columns:
         df[col] = df[col].astype(str)
 
-    df.to_excel("./stats/final_table_test.xlsx", index=False, engine='openpyxl')
+    df.to_excel("./stats/final_table_test2.xlsx", index=False, engine='openpyxl')
     #df.to_excel("./stats/final_table_fairgo.xlsx", index=False, engine='openpyxl')
     # Create the Plotly table
     '''fig = go.Figure(data=[go.Table(

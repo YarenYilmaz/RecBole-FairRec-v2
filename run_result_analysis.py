@@ -31,7 +31,7 @@ def plot_all_models(model_list, base_path):
     # Get all subdirectories starting with 'results_'
     #subdirectories = [d for d in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, d)) and d.startswith("results_")]
     #subdirectories = ["results_BX_URM_filtered_age" , "results_ml1m_URM_filtered_age", "results_ml1m_URM_filtered_gender"]
-    subdirectories = ["results_ml1m_URM_filtered_gender"]
+    subdirectories = ["results_ml1m_URM_filtered_test"]
     for model_name in model_list:
         for sub_dir in subdirectories:
             for i in range(1, 55): # 61 adet sonuç için çalışabilir
