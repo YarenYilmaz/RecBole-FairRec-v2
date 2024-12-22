@@ -23,10 +23,11 @@ weight_decay: 0.001
 eval_args:
   split: {'RS':[8,1,1]}
   group_by: user
-  order: RO
+  order: TO
   mode: uni100
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
-        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness"]
-valid_metric: NDCG@5
-topk: [5]
+        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
+          "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]
+valid_metric: NDCG@10
+topk: [10]
 popularity_ratio: 0.1

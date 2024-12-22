@@ -26,7 +26,8 @@ eval_args:
   order: TO
   mode: uni100
 metrics: ["NDCG","Recall","Hit","MRR","DifferentialFairness","GiniIndex","PopularityPercentage",
-        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness"]
+        "ValueUnfairness","AbsoluteUnfairness","UnderUnfairness","OverUnfairness","NonParityUnfairness",
+          "AbsoluteDifference","KSStatic", "GeneralizedCrossEntropy"]
 valid_metric: NDCG@10
 topk: [10]
 popularity_ratio: 0.1
